@@ -1,0 +1,78 @@
+@url=http://localhost:8085
+
+### ping
+GET {{url}}/ping
+
+### register with dummy data
+POST {{url}}/api/tourist/register
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john234@gmail.com",
+    "phone": 1234567890,
+    "dob": "1990-01-01",
+    "passport": "A1234567"
+}
+
+
+### get data by id
+GET {{url}}/api/tourist/data/588bc3e7-e41f-42c2-81df-435c07440b65
+
+
+### register and generate QR code
+POST {{url}}/api/tourist/register
+Content-Type: application/json
+
+{
+  "personal_info": {
+    "full_name": "Prerna Phadnis",
+    "date_of_birth": "2005-02-25",
+    "gender": "Female",
+    "nationality": "Indian"
+  },
+  "government_id": {
+    "id_type": "Aadhaar",
+    "id_number": "1234-5678-9012",
+    "id_document_url": "https://secure-storage.com/docs/aadhaar123.pdf"
+  },
+  "contact_details": {
+    "mobile_number": "+91-9876543210",
+    "email": "prerna@example.com"
+  },
+  "travel_details": {
+    "trip_itinerary": [
+      {
+        "city": "Shillong",
+        "check_in": "2025-06-01",
+        "check_out": "2025-06-05",
+        "accommodation": "Hotel Pinewood"
+      },
+      {
+        "city": "Kaziranga",
+        "check_in": "2025-06-06",
+        "check_out": "2025-06-09",
+        "accommodation": "Jungle Resort"
+      }
+    ],
+    "arrival_date": "2025-06-01",
+    "departure_date": "2025-06-10",
+    "booking_reference": "FLY12345IND"
+  },
+  "emergency_info": {
+    "contacts": [
+      {
+        "name": "Priyan",
+        "relationship": "Friend",
+        "mobile_number": "+91-9123456789"
+      }
+    ],
+    "blood_group": "O+",
+    "medical_conditions": "Asthma"
+  },
+  "consent": {
+    "live_tracking": true,
+    "health_data_sharing": false,
+    "data_usage_acknowledgement": true
+  }
+}
