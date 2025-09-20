@@ -3,22 +3,13 @@
 ### ping
 GET {{url}}/ping
 
-### register with dummy data
-POST {{url}}/api/tourist/register
-Content-Type: application/json
 
-{
-    "name": "John Doe",
-    "email": "john234@gmail.com",
-    "phone": 1234567890,
-    "dob": "1990-01-01",
-    "passport": "A1234567"
-}
-
+@user=prerna
+@pass=prerna18
 
 ### get data by id
-GET {{url}}/api/tourist/data/588bc3e7-e41f-42c2-81df-435c07440b65
-
+GET {{url}}/api/tourist/data/28792f39-1931-45c1-9e9c-4f7269ff0aca
+Authorization: Basic {{user}}:{{pass}}
 
 ### register and generate QR code
 POST {{url}}/api/tourist/register

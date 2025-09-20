@@ -18,7 +18,7 @@ func SetupRoutes(router *gin.Engine) {
 
 	router.POST("/api/tourist/register", register())
 
-	router.GET("/api/tourist/data/:id", get())
+	router.GET("/api/tourist/data/:id", BasicAuthMiddleware(), get())
 }
 
 var storage = make(map[string]RegisterRequest)
@@ -34,36 +34,60 @@ func ping() gin.HandlerFunc {
 func register() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var data RegisterRequest
-		if err := c.BindJSON(&data); err != nil {
+
+		// Parse and bind JSON to DTO
+		if err := c.ShouldBindJSON(&data); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		data.ID = uuid.New().String()
-		raw, _ := json.Marshal(data)
+		// Assign unique ID
+		id := uuid.New().String()
+		dataWithID := struct {
+			ID string `json:"id"`
+			RegisterRequest
+		}{
+			ID:              id,
+			RegisterRequest: data,
+		}
+
+		// Marshal with ID included
+		raw, err := json.MarshalIndent(dataWithID, "", "  ")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal data"})
+			return
+		}
+
+		// Generate SHA-256 hash of raw JSON
 		hash := sha256.Sum256(raw)
 		dataHash := hex.EncodeToString(hash[:])
 
-		// store locally (TODO: later in s3/ipfs)
-		storage[data.ID] = data
+		// Store in memory (temporary)
+		storage[id] = data
 
-		if err := os.WriteFile("./data/"+data.ID+".json", raw, 0755); err != nil {
+		// Save JSON to local disk
+		if err := os.WriteFile("./data/"+id+".json", raw, 0644); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save data"})
 			return
 		}
 
-		// TODO: push datahash to blockchain
-
+		// TODO: push dataHash to blockchain
 		fmt.Printf("hash %s\n", dataHash)
 
-		// Generate QR Code PNG
-		qr, _ := qrcode.Encode(data.ID, qrcode.Medium, 256)
+		// Generate QR Code containing the ID
+		qr, err := qrcode.Encode(id, qrcode.Medium, 256)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate QR"})
+			return
+		}
 
+		// Return QR code as PNG
 		c.Header("Content-Type", "image/png")
 		c.Writer.WriteHeader(http.StatusOK)
-		c.Writer.Write(qr)
+		_, _ = c.Writer.Write(qr)
 	}
 }
+
 func get() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
