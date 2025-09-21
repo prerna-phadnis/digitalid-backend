@@ -72,6 +72,13 @@ func register() gin.HandlerFunc {
 		}
 
 		// TODO: push dataHash to blockchain
+		// Convert itinerary and emergency info into JSON
+        itineraryJSON, _ := json.Marshal(data.Travel.TripItinerary)
+        emergencyJSON, _ := json.Marshal(data.Emergency.Contacts)
+
+        lastBlock := Blockchain[len(Blockchain)-1]
+        newBlock := generateBlock(lastBlock, id, dataHash, itineraryJSON, emergencyJSON)
+        Blockchain = append(Blockchain, newBlock)
 		fmt.Printf("hash %s\n", dataHash)
 
 		// Generate QR Code containing the ID
