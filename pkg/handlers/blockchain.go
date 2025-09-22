@@ -4,16 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
-
 type Block struct {
-	Index     int             `json:"index"`
-	Timestamp string          `json:"timestamp"`
-	TouristID string          `json:"tourist_id"`
-	DataHash  string          `json:"data_hash"`
-
+	Index     int    `json:"index"`
+	Timestamp string `json:"timestamp"`
+	TouristID string `json:"tourist_id"`
+	DataHash  string `json:"data_hash"`
 
 	Itinerary json.RawMessage `json:"itinerary"`
 	Emergency json.RawMessage `json:"emergency"`
@@ -24,14 +23,12 @@ type Block struct {
 
 var Blockchain []Block
 
-
 func calculateHash(block Block) string {
-	record := string(block.Index) + block.Timestamp + block.TouristID +
+	record := fmt.Sprint(block.Index) + block.Timestamp + block.TouristID +
 		block.DataHash + string(block.Itinerary) + string(block.Emergency) + block.PrevHash
 	h := sha256.Sum256([]byte(record))
 	return hex.EncodeToString(h[:])
 }
-
 
 func generateBlock(prev Block, touristID, dataHash string, itinerary, emergency json.RawMessage) Block {
 	block := Block{
@@ -46,7 +43,6 @@ func generateBlock(prev Block, touristID, dataHash string, itinerary, emergency 
 	block.Hash = calculateHash(block)
 	return block
 }
-
 
 func InitBlockchain() {
 	genesis := Block{

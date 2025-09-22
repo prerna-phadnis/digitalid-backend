@@ -43,11 +43,17 @@ func register() gin.HandlerFunc {
 
 		// Assign unique ID
 		id := uuid.New().String()
+
+		// Add computed fields (tourist name + digital expiry)
 		dataWithID := struct {
-			ID string `json:"id"`
+			ID            string `json:"id"`
+			TouristName   string `json:"tourist_name"`
+			DigitalExpiry string `json:"digital_id_expiry"`
 			RegisterRequest
 		}{
 			ID:              id,
+			TouristName:     data.PersonalInfo.FullName,
+			DigitalExpiry:   data.Travel.DepartureDate,
 			RegisterRequest: data,
 		}
 
@@ -73,16 +79,31 @@ func register() gin.HandlerFunc {
 
 		// TODO: push dataHash to blockchain
 		// Convert itinerary and emergency info into JSON
-        itineraryJSON, _ := json.Marshal(data.Travel.TripItinerary)
-        emergencyJSON, _ := json.Marshal(data.Emergency.Contacts)
+		itineraryJSON, _ := json.Marshal(data.Travel.TripItinerary)
+		emergencyJSON, _ := json.Marshal(data.Emergency.Contacts)
 
-        lastBlock := Blockchain[len(Blockchain)-1]
-        newBlock := generateBlock(lastBlock, id, dataHash, itineraryJSON, emergencyJSON)
-        Blockchain = append(Blockchain, newBlock)
+		lastBlock := Blockchain[len(Blockchain)-1]
+		newBlock := generateBlock(lastBlock, id, dataHash, itineraryJSON, emergencyJSON)
+		Blockchain = append(Blockchain, newBlock)
 		fmt.Printf("hash %s\n", dataHash)
 
-		// Generate QR Code containing the ID
-		qr, err := qrcode.Encode(id, qrcode.Medium, 256)
+		qrPayload := struct {
+			ID            string `json:"id"`
+			TouristName   string `json:"tourist_name"`
+			DigitalExpiry string `json:"digital_id_expiry"`
+		}{
+			ID:            id,
+			TouristName:   data.PersonalInfo.FullName,
+			DigitalExpiry: data.Travel.DepartureDate,
+		}
+
+		qrData, err := json.Marshal(qrPayload)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to prepare QR payload"})
+			return
+		}
+
+		qr, err := qrcode.Encode(string(qrData), qrcode.Medium, 256)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate QR"})
 			return
