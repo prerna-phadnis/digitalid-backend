@@ -8,7 +8,7 @@ GET {{url}}/ping
 @pass=prerna18
 
 ### get data by id
-GET {{url}}/api/tourist/data/28792f39-1931-45c1-9e9c-4f7269ff0aca
+GET {{url}}/api/tourist/data/aa396b67-cc60-4f47-a4c9-fa16903c4de6
 Authorization: Basic {{user}}:{{pass}}
 
 ### register and generate QR code
